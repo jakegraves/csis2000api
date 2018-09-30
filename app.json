@@ -1,0 +1,8 @@
+{
+    "name": "CSIS 2000 WebApi",
+    "description": "A MEAN app that allows users to get data back.",
+    "repository": "https://github.com/chrisckchang/mean-contactlist",
+    "logo": "",
+    "keywords": ["node", "express", "MEAN", "REST", "API"],
+    "addons": [""]
+  }
