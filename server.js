@@ -46,7 +46,7 @@ function handleError(res, reason, message, code) {
     let address = faker.address;
     let card = faker.helpers.createCard();
 
-    card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()},`
+    card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()}`
     card.avatar = faker.image.avatar();
     card.id = id;
     card.name = `${FirstName} ${LastName}`
