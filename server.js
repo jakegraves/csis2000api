@@ -43,15 +43,19 @@ function handleError(res, reason, message, code) {
  function getUserCard(id){
     let FirstName = faker.name.firstName();
     let LastName = faker.name.lastName();
+    let address = faker.address;
     let card = faker.helpers.createCard();
-    card.id = id++;
+
+    card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()},`
+    card.avatar = faker.image.avatar();
+    card.id = id;
     card.name = `${FirstName} ${LastName}`
     card.email = faker.internet.email(FirstName, LastName);
     card.username = faker.internet.userName(FirstName, LastName);
-    card.avatar = faker.image.avatar();
+    card.company = faker.company.companyName();
+
     delete card.accountHistory;
     delete card.posts;
-    delete card.address.geo;
     return card
  }
 
@@ -71,16 +75,6 @@ app.get("/demo/all", function (req, res) {
   let array = [];
 
   for (let i = 0; i < total; i++) {
-    let FirstName = faker.name.firstName();
-    let LastName = faker.name.lastName();
-    let card = faker.helpers.createCard();
-    card.id = idStart++;
-    card.name = `${FirstName} ${LastName}`
-    card.email = faker.internet.email(FirstName, LastName);
-    card.username = faker.internet.userName(FirstName, LastName);
-    delete card.accountHistory;
-    delete card.posts;
-
     array.push(getUserCard(idStart++));
   }
 
