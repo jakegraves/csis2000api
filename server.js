@@ -36,14 +36,14 @@ function handleError(res, reason, message, code) {
     return card
  }
 
-app.get("/api/demo", function (req, res) {
+app.get("/demo", function (req, res) {
 
   let id = faker.random.number();
   res.status(200).json(getUserCard(id));
 
 });
 
-app.get("/api/demo/all", function (req, res) {
+app.get("/demo/all", function (req, res) {
 
   let total = faker.random.number({max:20, min:2});
 
@@ -68,17 +68,3 @@ app.get("/api/demo/all", function (req, res) {
   res.status(200).json(array);
 
 });
-
-app.post("/api/contacts", function (req, res) {});
-
-/*  "/api/contacts/:id"
- *    GET: find contact by id
- *    PUT: update contact by id
- *    DELETE: deletes contact by id
- */
-
-app.get("/api/contacts/:id", function (req, res) {});
-
-app.put("/api/contacts/:id", function (req, res) {});
-
-app.delete("/api/contacts/:id", function (req, res) {});
