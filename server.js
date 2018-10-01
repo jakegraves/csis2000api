@@ -4,7 +4,10 @@ var bodyParser = require("body-parser");
 
 var app = express();
 app.use(bodyParser.json());
-
+var server = app.listen(process.env.PORT || 8080, function () {
+  var port = server.address().port;
+  console.log("App now running on port", port);
+});
 
 function handleError(res, reason, message, code) {
   console.log("ERROR: " + reason);
@@ -18,33 +21,36 @@ function handleError(res, reason, message, code) {
  *    POST: creates a new contact
  */
 
+ function getUserCard(id){
+    let FirstName = faker.name.firstName();
+    let LastName = faker.name.lastName();
+    let card = faker.helpers.createCard();
+    card.id = id++;
+    card.name = `${FirstName} ${LastName}`
+    card.email = faker.internet.email(FirstName, LastName);
+    card.username = faker.internet.userName(FirstName, LastName);
+    delete card.accountHistory;
+    delete card.posts;
+    delete card.address.geo;
+    return card
+ }
+
 app.get("/api/demo", function (req, res) {
 
-  let idStart = faker.random.number();
-  let FirstName = faker.name.firstName();
-  let LastName = faker.name.lastName();
-  let card = faker.helpers.createCard();
-  card.id = idStart++;
-  card.name = `${FirstName} ${LastName}`
-  card.email = faker.internet.email(FirstName, LastName);
-  card.username = faker.internet.userName(FirstName, LastName);
-  delete card.accountHistory;
-  delete card.posts;
-
-
-  res.status(200).json(card);
+  let id = faker.random.number();
+  res.status(200).json(getUserCard(id));
 
 });
 
 app.get("/api/demo/all", function (req, res) {
 
-  let total = faker.random.number(20);
+  let total = faker.random.number({max:20, min:2});
 
   let idStart = faker.random.number();
 
   let array = [];
 
-  for (let index = 0; index < total; index++) {
+  for (let i = 0; i < total; i++) {
     let FirstName = faker.name.firstName();
     let LastName = faker.name.lastName();
     let card = faker.helpers.createCard();
@@ -55,7 +61,7 @@ app.get("/api/demo/all", function (req, res) {
     delete card.accountHistory;
     delete card.posts;
 
-    array.push(card);
+    array.push(getUserCard(idStart++));
   }
 
   res.status(200).json(array);
