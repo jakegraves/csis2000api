@@ -29,6 +29,7 @@ function handleError(res, reason, message, code) {
     card.name = `${FirstName} ${LastName}`
     card.email = faker.internet.email(FirstName, LastName);
     card.username = faker.internet.userName(FirstName, LastName);
+    card.avatar = faker.image.avatar();
     delete card.accountHistory;
     delete card.posts;
     delete card.address.geo;
