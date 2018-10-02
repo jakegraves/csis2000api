@@ -1,0 +1,95 @@
+<html>
+
+<head>
+  <title>CSIS 2000 Api</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <style>
+      h3 > small {
+        margin-left: 100px;
+      }
+  </style>
+</head>
+
+<body>
+  <div class="container-fluid">
+    <br>
+    <h1>Jacob's CSIS 2000 Json Data api</h1>
+    <br>
+    <br>
+    <h2>Endpoints</h2>
+    <h3>/demo/all <small>https://webdev-csis2000.herokuapp.com/demo/all</small></h3>
+    <p>Demo customer data. Don't use this endpoint for assignments. Returns an array.</p>
+    <p>Data structure:</p>
+    <pre>
+{
+    "id": number
+    "name": string, 
+    "username": string,
+    "email": string,
+    "address": string,
+    "phone": string,
+    "website": string,
+    "company": string,
+    "avatar": string
+}
+    </pre>
+    <br>
+    <br>
+    <h3>/transactions<small>https://webdev-csis2000.herokuapp.com/transactions</small></h3>
+    <p>Transaction data. Returns an array.</p>
+    <p>Data structure:</p>
+    <pre>
+{
+    "amount": string,
+    "date": string,
+    "business": string,
+    "name": string,
+    "type": string,
+    "account": string,
+    "id": number,
+    "purchaseImageUrl": string
+}
+    </pre>
+    <br>
+    <br>
+    <h3>/accounts<small>https://webdev-csis2000.herokuapp.com/accounts</small></h3>
+    <p>Account data. Returns an array.</p>
+    <p>Data structure:</p>
+    <pre>
+{
+    "id": number,
+    "accountName": string,
+    "accountNumber": string,
+    "amount": string,
+    "owner": string,
+    "ownerPhone": string,
+    "ownerEmail": string,
+    "ownerImageUrl": string
+}
+    </pre>
+    <br>
+    <br>
+    <h3>/computers<small>https://webdev-csis2000.herokuapp.com/computers</small></h3>
+    <p>Computer and Internet data. Returns an array.</p>
+    <p>Data structure:</p>
+    <pre>
+{
+    "id": number,
+    "userName": string,
+    "ip": string,
+    "ipv6": string,
+    "macAddress": string,
+    "userAgent": string,
+    "password": string,
+    "locationUrl": string
+}
+    </pre>
+  </div>
+
+
+</body>
+
+</html>
