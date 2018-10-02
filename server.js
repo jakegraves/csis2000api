@@ -10,7 +10,7 @@ app.use(express.static(__dirname + "/public"));
 app.use(function (req, res, next) {
 
   // Website you wish to allow to connect
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5000');
+  res.setHeader('Access-Control-Allow-Origin', '*');
 
   // Request methods you wish to allow
   res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -48,7 +48,7 @@ function handleError(res, reason, message, code) {
     let address = faker.address;
     let card = faker.helpers.createCard();
 
-    card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()},`
+    card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()}`
     card.avatar = faker.image.avatar();
     card.id = id;
     card.name = `${FirstName} ${LastName}`
