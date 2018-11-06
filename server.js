@@ -58,7 +58,7 @@ function handleError(res, reason, message, code) {
 
     delete card.accountHistory;
     delete card.posts;
-    return card
+    return card;
  }
 
 app.get("/demo", function (req, res) {
