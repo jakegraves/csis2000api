@@ -26,74 +26,27 @@
     <h2>Endpoints</h2>
     <br>
     <br>
-    <h3>/demo/all <small>https://webdev-csis2000.herokuapp.com/demo/all</small></h3>
-    <p>Demo customer data. Don't use this endpoint for assignments. Returns an array.</p>
-    <p>Data structure:</p>
-    <pre>
-{
-    "id": number
-    "name": string, 
-    "username": string,
-    "email": string,
-    "address": string,
-    "phone": string,
-    "website": string,
-    "company": string,
-    "avatar": string
-}
-    </pre>
+    <h3>/public</h3>
+    <h4>post</h4>
     <br>
     <br>
-    <h3>/transactions<small>https://webdev-csis2000.herokuapp.com/transactions</small></h3>
-    <p>Transaction data. Returns an array.</p>
-    <p>Data structure:</p>
-    <pre>
-{
-    "amount": string,
-    "date": string,
-    "business": string,
-    "name": string,
-    "type": string,
-    "account": string,
-    "id": number,
-    "purchaseImageUrl": string
-}
-    </pre>
+    <h3>/public/:fileId</h3>
+    <h4>get, delete</h4>
     <br>
     <br>
-    <h3>/accounts<small>https://webdev-csis2000.herokuapp.com/accounts</small></h3>
-    <p>Account data. Returns an array.</p>
-    <p>Data structure:</p>
-    <pre>
-{
-    "id": number,
-    "accountName": string,
-    "accountNumber": string,
-    "amount": string,
-    "owner": string,
-    "ownerPhone": string,
-    "ownerEmail": string,
-    "ownerImageUrl": string
-}
-    </pre>
+    <h3>/login</h3>
+    <h4>post</h4>
     <br>
     <br>
-    <h3>/computers<small>https://webdev-csis2000.herokuapp.com/computers</small></h3>
-    <p>Computer and Internet data. Returns an array.</p>
-    <p>Data structure:</p>
-    <pre>
-{
-    "id": number,
-    "userName": string,
-    "ip": string,
-    "ipv6": string,
-    "macAddress": string,
-    "userAgent": string,
-    "password": string,
-    "locationUrl": string
-}
-    </pre>
-    <small>Disclaimer: all data generated using <a href="https://github.com/marak/Faker.js/">Faker.js</a>. It's all fake data.</small>
+    <h3>/companies/:companyId</h3>
+    <h4>get</h4>
+    <br>
+    <br>
+    <h3>/companies/:companyId/images</h3>
+    <h4>get</h4>
+    <br>
+    <br>
+    
   </div>
 
 
