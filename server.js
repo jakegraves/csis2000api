@@ -1,11 +1,13 @@
 var faker = require("faker");
 var express = require("express");
 var bodyParser = require("body-parser");
+var fs = require("fs");
+
 
 var app = express();
 app.use(bodyParser.json());
 
-app.use(express.static(__dirname + "/public"));
+//app.use(express.static(__dirname + "/public"));
 
 app.use(function (req, res, next) {
 
@@ -30,6 +32,56 @@ var server = app.listen(process.env.PORT || 8080, function () {
   console.log("App now running on port", port);
 });
 
+app.get('/public/:fileId', function(req, res){
+  authCheck(req, res);
+
+  const fileId = req.params.fileId;
+  console.log(fileId);
+  fs.readFile(`./public/${fileId}`, function (err,data){
+    res.contentType("image/jpg");
+    res.status(200).send(data);
+  });
+});
+
+app.delete('/public/:fileId', function(req, res){
+  authCheck(req, res);
+
+  const fileId = req.params.fileId;
+  console.log(fileId);
+  fs.exists(`./public/${fileId}`, function (err,data){
+    fs.unlink(`./public/${fileId}`, err => {
+      if (err) throw err;
+      res.status(204).send();
+    });
+  });
+});
+
+app.post('/public', function (req, res) {
+  authCheck(req, res);
+
+  var data = Buffer.from('')
+  req.on('data', function (chunk) {
+    data = Buffer.concat([data, chunk]);
+  });
+  req.on('end', function () {
+    done(res, data);
+  });
+});
+
+function done(res, buffer) {
+  var length;
+  fs.readdir('./public', (err, files) => {
+    length = files.length
+    fs.writeFile(`./public/${length}`, buffer, function (err) {
+      if (err) {
+        console.log(err)
+      }
+      res.status(201).json(`public/${length}`);
+    });
+  });
+}
+
+
 function handleError(res, reason, message, code) {
   console.log("ERROR: " + reason);
   res.status(code || 500).json({
@@ -42,7 +94,7 @@ function handleError(res, reason, message, code) {
  *    POST: creates a new contact
  */
 
- const AccessTokens = [
+const AccessTokens = [
   '76e994ad-fac7-4cc7-b41a-0d11e0920882',
   '5d067f80-cbcb-40a0-828e-8ad86374ea34',
   '686b4c6f-589d-4feb-8e60-088ea214f8d0',
@@ -75,152 +127,245 @@ function handleError(res, reason, message, code) {
   '5d7e0735-c28f-49a1-b31f-f5fda11bd474'
 ]
 
- function getUserCard(id){
-    let FirstName = faker.name.firstName();
-    let LastName = faker.name.lastName();
-    let address = faker.address;
-    let card = faker.helpers.createCard();
+const COMPANY_ID = 78903;
 
-    card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()}`
-    card.avatar = faker.image.avatar();
-    card.id = id;
-    card.name = `${FirstName} ${LastName}`
-    card.email = faker.internet.email(FirstName, LastName);
-    card.username = faker.internet.userName(FirstName, LastName);
-    card.company = faker.company.companyName();
+function getUserCard(id) {
+  let FirstName = faker.name.firstName();
+  let LastName = faker.name.lastName();
+  let address = faker.address;
+  let card = faker.helpers.createCard();
 
-    delete card.accountHistory;
-    delete card.posts;
-    return card;
- }
+  card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()}`
+  card.avatar = faker.image.avatar();
+  card.id = id;
+  card.name = `${FirstName} ${LastName}`
+  card.email = faker.internet.email(FirstName, LastName);
+  card.username = faker.internet.userName(FirstName, LastName);
+  card.company = faker.company.companyName();
 
- app.get("/login", function (req, res) {
+  delete card.accountHistory;
+  delete card.posts;
+  return card;
+}
 
-  const username = req.UserName;
-  const password = req.Password;
+app.post("/login", function (req, res) {
 
-  if(username !== 'admin' && password !== 'icannottellyou') {
+  const username = req.body.UserName;
+  const password = req.body.Password;
+
+  if (username !== 'admin' && password !== 'icannottellyou') {
     res.status(401).json('Username or Password not found.');
     return;
   }
 
-  const token = {AccessToken: AccessTokens[faker.random.number({max: AccessTokens.length, min: 0})]}
+  const token = {
+    AccessToken: AccessTokens[faker.random.number({
+      max: AccessTokens.length,
+      min: 0
+    })],
+    CompanyId: COMPANY_ID
+  }
 
   res.status(200).json(token);
 
 });
 
-app.get("/demo", function (req, res) {
+app.get("/companies/:companyId", function (req, res) {
 
-  let id = faker.random.number();
+  authCheck(req, res);
+
+  let id = parseInt(req.params.companyId, 10);
+
+  if (id !== COMPANY_ID) {
+    res.status(400).json("Not found.");
+  }
+
   res.status(200).json(getUserCard(id));
 
 });
 
-app.get("/demo/all", function (req, res) {
+app.get("/companies/:companyId/images", function (req, res) {
 
-  let total = faker.random.number({max:20, min:2});
+  authCheck(req, res);
 
-  let idStart = faker.random.number();
+  let id = parseInt(req.params.companyId, 10);
 
-  let array = [];
-
-  for (let i = 0; i < total; i++) {
-    array.push(getUserCard(idStart++));
+  if (id !== COMPANY_ID) {
+    res.status(400).json("Not found.");
   }
 
-  res.status(200).json(array);
+  res.status(200).json([{
+    "Id": 0,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=0"
+  }, {
+    "Id": 1,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=1"
+  }, {
+    "Id": 2,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=2"
+  }, {
+    "Id": 3,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=3"
+  }, {
+    "Id": 4,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=4"
+  }, {
+    "Id": 5,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=5"
+  }, {
+    "Id": 6,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=6"
+  }, {
+    "Id": 7,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=7"
+  }, {
+    "Id": 8,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=8"
+  }, {
+    "Id": 9,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=9"
+  }, {
+    "Id": 10,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=10"
+  }, {
+    "Id": 11,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=11"
+  }, {
+    "Id": 12,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=12"
+  }, {
+    "Id": 13,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=13"
+  }, {
+    "Id": 14,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=14"
+  }, {
+    "Id": 15,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=15"
+  }, {
+    "Id": 16,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=16"
+  }, {
+    "Id": 17,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=17"
+  }, {
+    "Id": 18,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=18"
+  }, {
+    "Id": 19,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=19"
+  }, {
+    "Id": 20,
+    "Author": "Aleks Dorohovich",
+    "PublicUrl": "https://picsum.photos/200/300?image=20"
+  }, {
+    "Id": 21,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=21"
+  }, {
+    "Id": 22,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=22"
+  }, {
+    "Id": 23,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=23"
+  }, {
+    "Id": 24,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=24"
+  }, {
+    "Id": 25,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=25"
+  }, {
+    "Id": 26,
+    "Author": "Vadim Sherbakov",
+    "PublicUrl": "https://picsum.photos/200/300?image=26"
+  }, {
+    "Id": 27,
+    "Author": "Yoni Kaplan-Nadel",
+    "PublicUrl": "https://picsum.photos/200/300?image=27"
+  }, {
+    "Id": 28,
+    "Author": "Jerry Adney",
+    "PublicUrl": "https://picsum.photos/200/300?image=28"
+  }, {
+    "Id": 29,
+    "Author": "Go Wild",
+    "PublicUrl": "https://picsum.photos/200/300?image=29"
+  }, {
+    "Id": 30,
+    "Author": "Shyamanta Baruah",
+    "PublicUrl": "https://picsum.photos/200/300?image=30"
+  }, {
+    "Id": 31,
+    "Author": "How-Soon Ngu",
+    "PublicUrl": "https://picsum.photos/200/300?image=31"
+  }, {
+    "Id": 32,
+    "Author": "Rodrigo Melo",
+    "PublicUrl": "https://picsum.photos/200/300?image=32"
+  }, {
+    "Id": 33,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=33"
+  }, {
+    "Id": 34,
+    "Author": "Aleks Dorohovich",
+    "PublicUrl": "https://picsum.photos/200/300?image=34"
+  }, {
+    "Id": 35,
+    "Author": "Shane Colella",
+    "PublicUrl": "https://picsum.photos/200/300?image=35"
+  }, {
+    "Id": 36,
+    "Author": "Vadim Sherbakov",
+    "PublicUrl": "https://picsum.photos/200/300?image=36"
+  }, {
+    "Id": 37,
+    "Author": "Austin Neill",
+    "PublicUrl": "https://picsum.photos/200/300?image=37"
+  }, {
+    "Id": 38,
+    "Author": "Allyson Souza",
+    "PublicUrl": "https://picsum.photos/200/300?image=38"
+  }, {
+    "Id": 39,
+    "Author": "Luke Chesser",
+    "PublicUrl": "https://picsum.photos/200/300?image=39"
+  }, {
+    "Id": 40,
+    "Author": "Ryan Mcguire",
+    "PublicUrl": "https://picsum.photos/200/300?image=40"
+  }]);
 
 });
 
-function getTransaction(id) {
-  let transaction = faker.helpers.createTransaction();
-  transaction.amount = `$${transaction.amount}`;
-  transaction.id = id;
-  transaction.purchaseImageUrl = faker.image.imageUrl(300, 300);
-  return transaction;
+function authCheck(req, res) {
+  var token = req.header("Authorization").split(' ')[1];
+
+  if (AccessTokens.indexOf(token) === -1) {
+    res.status(401).json("Unauthorized.");
+  }
 }
-
-app.get("/transactions", function (req, res) {
-
-  let total = faker.random.number({max:20, min:2});
-
-  let idStart = faker.random.number();
-
-  let array = [];
-
-  for (let i = 0; i < total; i++) {
-    array.push(getTransaction(idStart++));
-  }
-
-  res.status(200).json(array);
-
-});
-
-function getAccount(id) {
-  let firstName = faker.name.firstName();
-  let lastName = faker.name.lastName();
-
-  return {
-    id,
-    accountName: faker.finance.accountName(),
-    accountNumber: faker.finance.account(),
-    amount: faker.finance.amount(1111, 999999, undefined, "$"),
-    owner: `${firstName} ${lastName}`,
-    ownerPhone: faker.phone.phoneNumberFormat(),
-    ownerEmail: faker.internet.email(firstName, lastName),
-    ownerImageUrl: faker.image.people(300,300)
-  }
-
-}
-
-
-app.get("/accounts", function (req, res) {
-
-  let total = faker.random.number({max:20, min:2});
-
-  let idStart = faker.random.number();
-
-  let array = [];
-
-  for (let i = 0; i < total; i++) {
-    array.push(getAccount(idStart++));
-  }
-
-  res.status(200).json(array);
-
-});
-
-function getComputers(id) {
-  let firstName = faker.name.firstName();
-  let lastName = faker.name.lastName();
-
-  return {
-    id,
-    userName: faker.internet.userName(firstName, lastName),
-    ip: faker.internet.ip(),
-    ipv6: faker.internet.ipv6(),
-    macAddress: faker.internet.mac(),
-    userAgent: faker.internet.userAgent(),
-    password: faker.internet.password(),
-    locationUrl: faker.image.city(300,300)
-  }
-
-}
-
-
-app.get("/computers", function (req, res) {
-
-  let total = faker.random.number({max:20, min:2});
-
-  let idStart = faker.random.number();
-
-  let array = [];
-
-  for (let i = 0; i < total; i++) {
-    array.push(getComputers(idStart++));
-  }
-
-  res.status(200).json(array);
-
-});
