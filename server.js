@@ -1,10 +1,13 @@
+var faker = require("faker");
 var express = require("express");
 var bodyParser = require("body-parser");
+var fs = require("fs");
+
 
 var app = express();
 app.use(bodyParser.json());
 
-app.use(express.static(__dirname + "/public"));
+//app.use(express.static(__dirname + "/public"));
 
 app.use(function (req, res, next) {
 
@@ -29,6 +32,56 @@ var server = app.listen(process.env.PORT || 8080, function () {
   console.log("App now running on port", port);
 });
 
+app.get('/public/:fileId', function(req, res){
+  authCheck(req, res);
+
+  const fileId = req.params.fileId;
+  console.log(fileId);
+  fs.readFile(`./public/${fileId}`, function (err,data){
+    res.contentType("image/jpg");
+    res.status(200).send(data);
+  });
+});
+
+app.delete('/public/:fileId', function(req, res){
+  authCheck(req, res);
+
+  const fileId = req.params.fileId;
+  console.log(fileId);
+  fs.exists(`./public/${fileId}`, function (err,data){
+    fs.unlink(`./public/${fileId}`, err => {
+      if (err) throw err;
+      res.status(204).send();
+    });
+  });
+});
+
+app.post('/public', function (req, res) {
+  authCheck(req, res);
+
+  var data = Buffer.from('')
+  req.on('data', function (chunk) {
+    data = Buffer.concat([data, chunk]);
+  });
+  req.on('end', function () {
+    done(res, data);
+  });
+});
+
+function done(res, buffer) {
+  var length;
+  fs.readdir('./public', (err, files) => {
+    length = files.length
+    fs.writeFile(`./public/${length}`, buffer, function (err) {
+      if (err) {
+        console.log(err)
+      }
+      res.status(201).json(`public/${length}`);
+    });
+  });
+}
+
+
 function handleError(res, reason, message, code) {
   console.log("ERROR: " + reason);
   res.status(code || 500).json({
@@ -36,710 +89,283 @@ function handleError(res, reason, message, code) {
   });
 }
 
-const songBirdArray = [{
-    id: 1,
-    school: "Albertus Magnus College",
-    state: "CT",
-    name: "Lillian Ray",
-    email: "ray@albertus.edu"
-  },
-  {
-    id: 2,
-    school: "University of Connecticut",
-    state: "CT",
-    name: "Lynn Murphy",
-    email: "murphy@uconn.edu"
-  },
-  {
-    id: 3,
-    school: "University of Hartford",
-    state: "CT",
-    name: "Roland Patrick",
-    email: "patrick@hartford.edu"
-  },
-  {
-    id: 4,
-    school: "Husson University",
-    state: "ME",
-    name: "Faith Reynolds",
-    email: "reynolds@husson.edu"
-  },
-  {
-    id: 5,
-    school: "University of Southern Maine",
-    state: "ME",
-    name: "Heidi Fields",
-    email: "fields@usm.maine.edu"
-  },
-  {
-    id: 6,
-    school: "University of New England",
-    state: "ME",
-    name: "Roy Wallace",
-    email: "wallace@une.edu"
-  },
-  {
-    id: 7,
-    school: "Boston University",
-    state: "MA",
-    name: "Bessie Crawford",
-    email: "crawford@bu.edu"
-  },
-  {
-    id: 8,
-    school: "Harvard University",
-    state: "MA",
-    name: "Monica Morales",
-    email: "morales@harvard.edu"
-  },
-  {
-    id: 9,
-    school: "Cambridge College",
-    state: "MA",
-    name: "Juanita Stanley",
-    email: "stanley@cambridge.edu"
-  },
-  {
-    id: 10,
-    school: "University of New Hampshire",
-    state: "NH",
-    name: "Irma Chandler",
-    email: "chandler@unh.edu"
-  },
-  {
-    id: 11,
-    school: "Plymouth State University",
-    state: "NH",
-    name: "Ralph Warner",
-    email: "warner@plymouth.edu"
-  },
-  {
-    id: 12,
-    school: "Rivier University",
-    state: "NH",
-    name: "Pauline Johnston",
-    email: "johnston@rivier.edu"
-  },
-  {
-    id: 13,
-    school: "Kean University",
-    state: "NJ",
-    name: "Sylvia Mcdonald	mcdonald@kean.edu"
-  },
-  {
-    id: 14,
-    school: "Montclair State University",
-    state: "NJ",
-    name: "Gustavo Brock",
-    email: "brock@montclair.edu"
-  },
-  {
-    id: 15,
-    school: "The College of New Jersey",
-    state: "NJ",
-    name: "Otis Richardson",
-    email: "richardson@tcnj.edu"
-  },
-  {
-    id: 16,
-    school: "City University of New York",
-    state: "NY",
-    name: "Joy Swanson",
-    email: "swanson@cuny.edu"
-  },
-  {
-    id: 17,
-    school: "Binghamton University",
-    state: "NY",
-    name: "Christie Shaw",
-    email: "shaw@binghamton.edu"
-  },
-  {
-    id: 18,
-    school: "Buffalo State College",
-    state: "NY",
-    name: "Elsie Carter",
-    email: "carter@buffalostate.edu"
-  },
-  {
-    id: 19,
-    school: "Temple University",
-    state: "PA",
-    name: "Nadine Ross",
-    email: "ross@temple.edu"
-  },
-  {
-    id: 20,
-    school: "Pennsylvania State University",
-    state: "PA",
-    name: "Leslie Fox",
-    email: "fox@psu.edu"
-  },
-  {
-    id: 21,
-    school: "University of Pittsburgh",
-    state: "PA",
-    name: "Leona Duncan",
-    email: "duncan@pitt.edu"
-  },
-  {
-    id: 22,
-    school: "Providence College",
-    state: "RI",
-    name: "Clayton Brown",
-    email: "brown@providence.edu"
-  },
-  {
-    id: 23,
-    school: "Brown University",
-    state: "RI",
-    name: "Louise Hubbard",
-    email: "hubbard@brown.edu"
-  },
-  {
-    id: 24,
-    school: "University of Rhode Island",
-    state: "RI",
-    name: "Mitchell Mccormick",
-    email: "mccormick@uri.edu"
-  },
-  {
-    id: 25,
-    school: "Northern Vermont University",
-    state: "VT",
-    name: "Mamie Terry",
-    email: "terry@norvt.edu"
-  },
-  {
-    id: 26,
-    school: "College of St. Joseph",
-    state: "VT",
-    name: "Winston Cortez",
-    email: "cortez@csj.edu"
-  },
-  {
-    id: 27,
-    school: "Norwich University",
-    state: "VT",
-    name: "Oliver Dunn",
-    email: "dunn@norwich.edu"
-  },
-  {
-    id: 28,
-    school: "University of Illinois",
-    state: "IL",
-    name: "Jan Flowers",
-    email: "flowers@uillinois.edu"
-  },
-  {
-    id: 29,
-    school: "Chicago State University",
-    state: "IL",
-    name: "Andrea Gregory",
-    email: "gregory@csu.edu"
-  },
-  {
-    id: 30,
-    school: "Northern Illinois University",
-    state: "IL",
-    name: "Becky Briggs",
-    email: "briggs@niu.edu"
-  },
-  {
-    id: 31,
-    school: "Ball State University",
-    state: "IN",
-    name: "Judith Nelson",
-    email: "nelson@bsu.edu"
-  },
-  {
-    id: 32,
-    school: "Indiana State University",
-    state: "IN",
-    name: "Gerald Watson",
-    email: "watson@isu.edu"
-  },
-  {
-    id: 33,
-    school: "Purdue University Northwest",
-    state: "IN",
-    name: "Anne Reed",
-    email: "reed@pnw.edu"
-  },
-  {
-    id: 34,
-    school: "Iowa State University",
-    state: "IA",
-    name: "Julia Thomas",
-    email: "thomas@iastate.edu"
-  },
-  {
-    id: 35,
-    school: "University of Iowa",
-    state: "IA",
-    name: "Sandra Alexander",
-    email: "alexander@uiowa.edu"
-  },
-  {
-    id: 36,
-    school: "University of Northern Iowa",
-    state: "IA",
-    name: "Albert Long",
-    email: "long@uni.edu"
-  },
-  {
-    id: 37,
-    school: "Wichita State University",
-    state: "KA",
-    name: "Lisa Wright",
-    email: "wright@witchita.edu"
-  },
-  {
-    id: 38,
-    school: "Kansas State University",
-    state: "KA",
-    name: "Emily Butler",
-    email: "butler@k-state.edu"
-  },
-  {
-    id: 39,
-    school: "University of Kansas",
-    state: "KA	Judy Lopez",
-    email: "lopez@ku.edu"
-  },
-  {
-    id: 40,
-    school: "Kettering University",
-    state: "MI	Frank Martinez",
-    email: "martinez@kettering.edu"
-  },
-  {
-    id: 41,
-    school: "Central Michigan University",
-    state: "MI",
-    name: "Suzanna Stillwell",
-    email: "stillwell@cmich.edu"
-  },
-  {
-    id: 42,
-    school: "Eastern Michigan University",
-    state: "MI",
-    name: "Willetta Finnegan",
-    email: "finnegan@emich.edu"
-  },
-  {
-    id: 43,
-    school: "Winona State University",
-    state: "MN",
-    name: "Mariana Aiken",
-    email: "aiken@winona.edu"
-  },
-  {
-    id: 44,
-    school: "Bemidji State University",
-    state: "MN",
-    name: "Neely Tyree",
-    email: "tyree@bemidji.edu"
-  },
-  {
-    id: 45,
-    school: "Metropolitan State University",
-    state: "MN",
-    name: "Fawn Causey",
-    email: "causey@metrostate.edu"
-  },
-  {
-    id: 46,
-    school: "Truman State University",
-    state: "MO",
-    name: "Karri Turnbull",
-    email: "turnbull@truman.edu"
-  },
-  {
-    id: 47,
-    school: "University of Missouri",
-    state: "MO",
-    name: "Dion Osteen",
-    email: "osteen@missouri.edu"
-  },
-  {
-    id: 48,
-    school: "Lincoln University",
-    state: "MO",
-    name: "Elma Pruitt",
-    email: "pruitt@lincolnu.edu"
-  },
-  {
-    id: 49,
-    school: "Peru State College",
-    state: "NE",
-    name: "Leana Khan",
-    email: "khan@peru.edu"
-  },
-  {
-    id: 50,
-    school: "Wayne State College",
-    state: "NE",
-    name: "Luanne Herring",
-    email: "herring@wsc.edu"
-  },
-  {
-    id: 51,
-    school: "University of Nebraska",
-    state: "NE",
-    name: "Alethea Zhang",
-    email: "zhang@uneb.edu"
-  },
-  {
-    id: 52,
-    school: "University of Mary",
-    state: "ND",
-    name: "Chiquita Connell",
-    email: "connell@umary.edu"
-  },
-  {
-    id: 53,
-    school: "Bismarck State College",
-    state: "ND",
-    name: "Ngan Jobe",
-    email: "jobe@bismarck.edu"
-  },
-  {
-    id: 54,
-    school: "Minot State University",
-    state: "ND",
-    name: "Troy Funk",
-    email: "funk@minot.edu"
-  },
-  {
-    id: 55,
-    school: "Ohio State University",
-    state: "OH",
-    name: "Zane Burkholder",
-    email: "burkholder@osu.edu"
-  },
-  {
-    id: 56,
-    school: "Ohio University",
-    state: "OH",
-    name: "Jamar Foley",
-    email: "foley@ohio.edu"
-  },
-  {
-    id: 57,
-    school: "University of Cincinnati",
-    state: "OH",
-    name: "Lyndsay Bills",
-    email: "bills@uc.edu"
-  },
-  {
-    id: 58,
-    school: "Black Hills State University",
-    state: "SD",
-    name: "Renea Carswell",
-    email: "carswell@bhsu.edu"
-  },
-  {
-    id: 59,
-    school: "Dakota State University",
-    state: "SD",
-    name: "Sharen Olivas",
-    email: "olivas@dsu.edu"
-  },
-  {
-    id: 60,
-    school: "University of South Dakota",
-    state: "SD",
-    name: "Odis Tam",
-    email: "tam@usd.edu"
-  },
-  {
-    id: 61,
-    school: "University of Wisconsin",
-    state: "WI",
-    name: "Andrew Sullivan",
-    email: "sullivan@uww.edu"
-  },
-  {
-    id: 62,
-    school: "Lakeland University",
-    state: "WI",
-    name: "Jimmy Poole",
-    email: "poole@lakeland.edu"
-  },
-  {
-    id: 63,
-    school: "Marquette University",
-    state: "WI",
-    name: "Cora Barrett",
-    email: "barrett@marquette.edu"
-  },
-  {
-    id: 64,
-    school: "Jacksonville State University",
-    state: "AL",
-    name: "Anne Hoffman",
-    email: "hoffman@jsu.edu"
-  },
-  {
-    id: 65,
-    school: "Alabama State University",
-    state: "AL",
-    name: "Cedric Chavez",
-    email: "chavez@alasu.edu"
-  },
-  {
-    id: 66,
-    school: "Auburn University",
-    state: "AL",
-    name: "Alejandro Farmer",
-    email: "farmer@auburn.edu"
-  },
-  {
-    id: 67,
-    school: "University of Arkansas",
-    state: "AK",
-    name: "Gregory Fuller",
-    email: "fuller@urak.edu"
-  },
-  {
-    id: 68,
-    school: "Arkansas State University",
-    state: "AK",
-    name: "Johnathan Mathis",
-    email: "mathis@astate.edu"
-  },
-  {
-    id: 69,
-    school: "Harding University",
-    state: "AK",
-    name: "Enrique Jenkins",
-    email: "jenkins@harding.edu"
-  },
-  {
-    id: 70,
-    school: "Delaware State University",
-    state: "DE",
-    name: "Misty Parsons",
-    email: "parsons@desu.edu"
-  },
-  {
-    id: 71,
-    school: "University of Delaware",
-    state: "DE",
-    name: "Wade West",
-    email: "west@udel.edu"
-  },
-  {
-    id: 72,
-    school: "Wilmington University",
-    state: "DE",
-    name: "Joann Douglas",
-    email: "douglas@wilmu.edu"
-  },
-  {
-    id: 73,
-    school: "Palm Beach State College",
-    state: "FL",
-    name: "Darrell Munoz",
-    email: "munoz@palmbeachstate.edu"
-  },
-  {
-    id: 74,
-    school: "Florida State University",
-    state: "FL",
-    name: "Guy Wong",
-    email: "wong@flsu.edu"
-  },
-  {
-    id: 75,
-    school: "State College of Florida",
-    state: "FL",
-    name: "Devin Newton",
-    email: "newton@scf.edu"
-  },
-  {
-    id: 76,
-    school: "University of North Georgia",
-    state: "GA",
-    name: "Gregory Cannon",
-    email: "cannon@ung.edu"
-  },
-  {
-    id: 77,
-    school: "Georgia Southern University",
-    state: "GA",
-    name: "Beatrice Diaz",
-    email: "diaz@geosu.edu"
-  },
-  {
-    id: 78,
-    school: "Albany State University",
-    state: "GA",
-    name: "Harold Johnston",
-    email: "johnston@asurams.edu"
-  },
-  {
-    id: 79,
-    school: "University of Louisville",
-    state: "KY",
-    name: "Clarence Ford",
-    email: "ford@lousivelle.edu"
-  },
-  {
-    id: 80,
-    school: "Kentucky State University",
-    state: "KY",
-    name: "Alton Pierce",
-    email: "pierce@kysu.edu"
-  },
-  {
-    id: 81,
-    school: "University of Kentucky",
-    state: "KY",
-    name: "Ryan Harper",
-    email: "harper@uky.edu"
-  },
-  {
-    id: 82,
-    school: "University of Louisiana",
-    state: "LA",
-    name: "Anthony Cruz",
-    email: "cruz@lua.edu"
-  },
-  {
-    id: 83,
-    school: "Louisiana State University",
-    state: "LA",
-    name: "Kari Ortega",
-    email: "ortega@lusu.edu"
-  },
-  {
-    id: 84,
-    school: "Southern University",
-    state: "LA",
-    name: "Tricia Houston",
-    email: "houston@lasu.edu"
-  },
-  {
-    id: 85,
-    school: "Morgan State University",
-    state: "MD",
-    name: "Dolores Logan",
-    email: "logan@morgan.edu"
-  },
-  {
-    id: 86,
-    school: "Bowie State University",
-    state: "MD",
-    name: "Wm Garcia",
-    email: "garcia@bowie.edu"
-  },
-  {
-    id: 87,
-    school: "University of Baltimore",
-    state: "MD",
-    name: "Casey Hamilton",
-    email: "hamilton@ubalt.edu"
-  },
-  {
-    id: 88,
-    school: "Mississippi Valley State University",
-    state: "MS",
-    name: "Malcolm Doyle",
-    email: "doyle@mvsu.edu"
-  },
-  {
-    id: 89,
-    school: "University of Southern Mississippi",
-    state: "MS",
-    name: "Joanne Watkins",
-    email: "watkins@usm.edu"
-  },
-  {
-    id: 90,
-    school: "University of Mississippi",
-    state: "MS",
-    name: "Leticia Bates",
-    email: "bates@olemiss.edu"
-  },
-  {
-    id: 91,
-    school: "University of North Carolina",
-    state: "NC",
-    name: "Alfonso Munoz",
-    email: "munoz@unca.edu"
-  },
-  {
-    id: 92,
-    school: "East Carolina University",
-    state: "NC",
-    name: "Violet Frazier",
-    email: "frazier@ecu.edu"
-  },
-  {
-    id: 93,
-    school: "North Carolina State University",
-    state: "NC",
-    name: "Gene Nguyen",
-    email: "nguyen@ncsu.edu"
-  },
-  {
-    id: 94,
-    school: "Cameron University",
-    state: "OK",
-    name: "Marion Matthews",
-    email: "matthews@cameron.edu"
-  },
-  {
-    id: 95,
-    school: "University of Oklahoma",
-    state: "OK",
-    name: "Marguerite Baker",
-    email: "baker@ou.edu"
-  },
-  {
-    id: 96,
-    school: "Oklahoma State University",
-    state: "OK",
-    name: "Rhonda Miles",
-    email: "miles@okstate.edu"
-  },
-  {
-    id: 97,
-    school: "College of Charleston",
-    state: "SC",
-    name: "Betty Rowe",
-    email: "rowe@cofc.edu"
-  },
-  {
-    id: 98,
-    school: "University of South Carolina",
-    state: "SC",
-    name: "Maurice Long",
-    email: "long@usca.ed9"
-  }
+/*  "/api/contacts"
+ *    GET: finds all contacts
+ *    POST: creates a new contact
+ */
+
+const AccessTokens = [
+  '76e994ad-fac7-4cc7-b41a-0d11e0920882',
+  '5d067f80-cbcb-40a0-828e-8ad86374ea34',
+  '686b4c6f-589d-4feb-8e60-088ea214f8d0',
+  'e745d685-dad8-4202-9fc0-38494d846d33',
+  '05bd690d-43ae-4a17-8ccc-cd94eed9d8fb',
+  'f10399ff-9d4b-40e8-af6d-c7bbb38785f3',
+  '9f4fd9dc-fcb0-4bbf-b955-cb749a97f2e0',
+  'a590f1cf-8697-4274-977c-98fde123e240',
+  'fa819634-a351-4591-a090-442d99958c3c',
+  '14e84528-434e-43f2-8f52-55fe61f3e9e1',
+  'dfe548d0-50ed-4f0b-880b-81a680624063',
+  '38b6eb34-f5ac-4a9c-b3cd-2ec293d8272f',
+  '5f411f9b-2d40-44e9-8264-cee70d856271',
+  'bd6352e2-806b-4fd4-965d-55b41fce86b5',
+  '3d023969-c5e4-4519-9fe9-5b4ca75a8f8d',
+  '32e85e5f-c3c0-4b8b-8b29-597389fb7545',
+  'f1de90e5-2bb3-4011-9570-3d173001308b',
+  '05176834-fd09-4c78-9d10-f359d986bce1',
+  '89b0775e-494b-4643-a50c-09a5d42e7b5f',
+  '85b0ac6f-b22a-433f-9e8d-f8ecbe484b1f',
+  '9e8e6999-222c-47d8-b004-341f00c98fd6',
+  '8571a488-3ff1-431d-bd63-8a65115ed205',
+  'dd0afe7f-d177-4bf1-8244-2edd367af45e',
+  '4cdf5b86-e373-49d7-8437-0a9a22ec29c8',
+  '5aad7af3-72c9-4d44-8f6b-5e9d38536e94',
+  '47f4ca4a-f555-480d-9afc-ba7044e289df',
+  '53d966aa-7441-4dc7-8e82-2daeca4a807c',
+  'd908da74-05e8-4e73-a265-1db329d970f2',
+  'a21baf75-dbdc-45fb-98dd-d71cbde9d9cd',
+  '5d7e0735-c28f-49a1-b31f-f5fda11bd474'
 ]
 
-app.get("/collegerep", function (req, res) {
+const COMPANY_ID = 78903;
 
-  res.status(200).json(songBirdArray);
+function getUserCard(id) {
+  let FirstName = faker.name.firstName();
+  let LastName = faker.name.lastName();
+  let address = faker.address;
+  let card = faker.helpers.createCard();
 
-});
+  card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()}`
+  card.avatar = faker.image.avatar();
+  card.id = id;
+  card.name = `${FirstName} ${LastName}`
+  card.email = faker.internet.email(FirstName, LastName);
+  card.username = faker.internet.userName(FirstName, LastName);
+  card.company = faker.company.companyName();
 
-app.get("/collegerep/:id", function (req, res) {
-  let id = +req.params.id;
-  console.log(id)
-  let rep = songBirdArray.filter(item => {
-    return item.id === id;
-  })[0];
+  delete card.accountHistory;
+  delete card.posts;
+  return card;
+}
 
-  if (rep) {
-    res.status(200).json(rep);
-  } else {
-    res.status(404).json({
-      message: "Id not found."
-    });
+app.post("/login", function (req, res) {
 
+  const username = req.body.UserName;
+  const password = req.body.Password;
+
+  if (username !== 'admin' && password !== 'icannottellyou') {
+    res.status(401).json('Username or Password not found.');
+    return;
   }
+
+  const token = {
+    AccessToken: AccessTokens[faker.random.number({
+      max: AccessTokens.length,
+      min: 0
+    })],
+    CompanyId: COMPANY_ID
+  }
+
+  res.status(200).json(token);
+
 });
+
+app.get("/companies/:companyId", function (req, res) {
+
+  authCheck(req, res);
+
+  let id = parseInt(req.params.companyId, 10);
+
+  if (id !== COMPANY_ID) {
+    res.status(400).json("Not found.");
+  }
+
+  res.status(200).json(getUserCard(id));
+
+});
+
+app.get("/companies/:companyId/images", function (req, res) {
+
+  authCheck(req, res);
+
+  let id = parseInt(req.params.companyId, 10);
+
+  if (id !== COMPANY_ID) {
+    res.status(400).json("Not found.");
+  }
+
+  res.status(200).json([{
+    "Id": 0,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=0"
+  }, {
+    "Id": 1,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=1"
+  }, {
+    "Id": 2,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=2"
+  }, {
+    "Id": 3,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=3"
+  }, {
+    "Id": 4,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=4"
+  }, {
+    "Id": 5,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=5"
+  }, {
+    "Id": 6,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=6"
+  }, {
+    "Id": 7,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=7"
+  }, {
+    "Id": 8,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=8"
+  }, {
+    "Id": 9,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=9"
+  }, {
+    "Id": 10,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=10"
+  }, {
+    "Id": 11,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=11"
+  }, {
+    "Id": 12,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=12"
+  }, {
+    "Id": 13,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=13"
+  }, {
+    "Id": 14,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=14"
+  }, {
+    "Id": 15,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=15"
+  }, {
+    "Id": 16,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=16"
+  }, {
+    "Id": 17,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=17"
+  }, {
+    "Id": 18,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=18"
+  }, {
+    "Id": 19,
+    "Author": "Paul Jarvis",
+    "PublicUrl": "https://picsum.photos/200/300?image=19"
+  }, {
+    "Id": 20,
+    "Author": "Aleks Dorohovich",
+    "PublicUrl": "https://picsum.photos/200/300?image=20"
+  }, {
+    "Id": 21,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=21"
+  }, {
+    "Id": 22,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=22"
+  }, {
+    "Id": 23,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=23"
+  }, {
+    "Id": 24,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=24"
+  }, {
+    "Id": 25,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=25"
+  }, {
+    "Id": 26,
+    "Author": "Vadim Sherbakov",
+    "PublicUrl": "https://picsum.photos/200/300?image=26"
+  }, {
+    "Id": 27,
+    "Author": "Yoni Kaplan-Nadel",
+    "PublicUrl": "https://picsum.photos/200/300?image=27"
+  }, {
+    "Id": 28,
+    "Author": "Jerry Adney",
+    "PublicUrl": "https://picsum.photos/200/300?image=28"
+  }, {
+    "Id": 29,
+    "Author": "Go Wild",
+    "PublicUrl": "https://picsum.photos/200/300?image=29"
+  }, {
+    "Id": 30,
+    "Author": "Shyamanta Baruah",
+    "PublicUrl": "https://picsum.photos/200/300?image=30"
+  }, {
+    "Id": 31,
+    "Author": "How-Soon Ngu",
+    "PublicUrl": "https://picsum.photos/200/300?image=31"
+  }, {
+    "Id": 32,
+    "Author": "Rodrigo Melo",
+    "PublicUrl": "https://picsum.photos/200/300?image=32"
+  }, {
+    "Id": 33,
+    "Author": "Alejandro Escamilla",
+    "PublicUrl": "https://picsum.photos/200/300?image=33"
+  }, {
+    "Id": 34,
+    "Author": "Aleks Dorohovich",
+    "PublicUrl": "https://picsum.photos/200/300?image=34"
+  }, {
+    "Id": 35,
+    "Author": "Shane Colella",
+    "PublicUrl": "https://picsum.photos/200/300?image=35"
+  }, {
+    "Id": 36,
+    "Author": "Vadim Sherbakov",
+    "PublicUrl": "https://picsum.photos/200/300?image=36"
+  }, {
+    "Id": 37,
+    "Author": "Austin Neill",
+    "PublicUrl": "https://picsum.photos/200/300?image=37"
+  }, {
+    "Id": 38,
+    "Author": "Allyson Souza",
+    "PublicUrl": "https://picsum.photos/200/300?image=38"
+  }, {
+    "Id": 39,
+    "Author": "Luke Chesser",
+    "PublicUrl": "https://picsum.photos/200/300?image=39"
+  }, {
+    "Id": 40,
+    "Author": "Ryan Mcguire",
+    "PublicUrl": "https://picsum.photos/200/300?image=40"
+  }]);
+
+});
+
+function authCheck(req, res) {
+  var token = req.header("Authorization").split(' ')[1];
+
+  if (AccessTokens.indexOf(token) === -1) {
+    res.status(401).json("Unauthorized.");
+  }
+}
