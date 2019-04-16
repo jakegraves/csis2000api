@@ -32,23 +32,30 @@ var server = app.listen(process.env.PORT || 8080, function () {
   console.log("App now running on port", port);
 });
 
-app.get('/public/:fileId', function(req, res){
-  authCheck(req, res);
+app.get('/public/:fileId', function (req, res) {
 
-  const fileId = req.params.fileId;
+  const fileId = parseInt(req.params.fileId, 10);
   console.log(fileId);
-  fs.readFile(`./public/${fileId}`, function (err,data){
+  if(isNaN(fileId)) {
+    return;
+  }
+  if (fileId) {
+    authCheck(req, res);
+  }
+
+  console.log(fileId);
+  fs.readFile(`./public/${fileId}`, function (err, data) {
     res.contentType("image/jpg");
     res.status(200).send(data);
   });
 });
 
-app.delete('/public/:fileId', function(req, res){
+app.delete('/public/:fileId', function (req, res) {
   authCheck(req, res);
 
   const fileId = req.params.fileId;
   console.log(fileId);
-  fs.exists(`./public/${fileId}`, function (err,data){
+  fs.exists(`./public/${fileId}`, function (err, data) {
     fs.unlink(`./public/${fileId}`, err => {
       if (err) throw err;
       res.status(204).send();
