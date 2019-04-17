@@ -10,7 +10,9 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname + "/public"));
 
 app.use(function (req, res, next) {
-
+  for (var key in req.body){ 
+    req.body[key.toLowerCase()] = req.body[key];
+  }
   // Website you wish to allow to connect
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -43,7 +45,6 @@ app.get('/public/:fileId', function (req, res) {
     authCheck(req, res);
   }
 
-  console.log(fileId);
   fs.readFile(`./public/${fileId}`, function (err, data) {
     res.contentType("image/jpg");
     res.status(200).send(data);
@@ -54,12 +55,21 @@ app.delete('/public/:fileId', function (req, res) {
   authCheck(req, res);
 
   const fileId = req.params.fileId;
-  console.log(fileId);
-  fs.exists(`./public/${fileId}`, function (err, data) {
-    fs.unlink(`./public/${fileId}`, err => {
-      if (err) throw err;
-      res.status(204).send();
-    });
+  fs.exists(`./public/${fileId}`, function (exists) {
+    if(exists) {
+      fs.unlink(`./public/${fileId}`, err => {
+        if (err){
+          res.status(500).json(err);
+          return;
+        } 
+        res.status(204).send();
+        return;
+      });
+    }else {
+      res.status(404).json("Not Found.");
+
+    }
+    
   });
 });
 
@@ -78,12 +88,17 @@ app.post('/public', function (req, res) {
 function done(res, buffer) {
   var length;
   fs.readdir('./public', (err, files) => {
+    if (err){
+      res.status(500).json(err);
+      return;
+    } 
     length = files.length
     fs.writeFile(`./public/${length}`, buffer, function (err) {
-      if (err) {
-        console.log(err)
-      }
-      res.status(201).json(`public/${length}`);
+      if (err){
+        res.status(500).json(err);
+        return;
+      } 
+      res.status(201).json({'Id': length});
     });
   });
 }
@@ -145,10 +160,8 @@ function getUserCard(id) {
   card.address = `${address.streetAddress(true)}, ${address.city()}, ${address.state()}, ${address.zipCode()}`
   card.avatar = faker.image.avatar();
   card.id = id;
-  card.name = `${FirstName} ${LastName}`
   card.email = faker.internet.email(FirstName, LastName);
-  card.username = faker.internet.userName(FirstName, LastName);
-  card.company = faker.company.companyName();
+  card.name = faker.company.companyName();
 
   delete card.accountHistory;
   delete card.posts;
@@ -157,8 +170,8 @@ function getUserCard(id) {
 
 app.post("/login", function (req, res) {
 
-  const username = req.body.UserName;
-  const password = req.body.Password;
+  const username = req.body.username;
+  const password = req.body.password;
 
   if (username !== 'admin' && password !== 'icannottellyou') {
     res.status(401).json('Username or Password not found.');
